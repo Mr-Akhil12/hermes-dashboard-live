@@ -20,7 +20,7 @@ const COLUMNS = [
 ] as const;
 
 export default function TasksPage() {
-  const { sidebarOpen } = useDashboardStore();
+  const { sidebarOpen, isMobile } = useDashboardStore();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState('');
   const [addingTo, setAddingTo] = useState<string | null>(null);
@@ -65,7 +65,7 @@ export default function TasksPage() {
   const sidebarW = sidebarOpen ? '14rem' : '4rem';
 
   return (
-    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: sidebarW, transition: 'margin-left 0.3s' }}>
+    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-sm font-semibold text-zinc-100">Tasks</h2>
         <p className="text-xs text-zinc-600">{tasks.length} total · {tasks.filter(t => t.status === 'done').length} done</p>

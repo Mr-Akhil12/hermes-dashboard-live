@@ -15,7 +15,7 @@ interface MemoryFact {
 }
 
 export default function MemoryPage() {
-  const { sidebarOpen } = useDashboardStore();
+  const { sidebarOpen, isMobile } = useDashboardStore();
   const [facts, setFacts] = useState<MemoryFact[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -40,7 +40,7 @@ export default function MemoryPage() {
   const sidebarW = sidebarOpen ? '14rem' : '4rem';
 
   return (
-    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: sidebarW, transition: 'margin-left 0.3s' }}>
+    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-orange-400" />

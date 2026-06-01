@@ -8,7 +8,7 @@ import { theme } from '@/lib/colors';
 import { Settings, Cpu, Shield, Clock, ExternalLink } from 'lucide-react';
 
 export default function ConfigPage() {
-  const { sidebarOpen } = useDashboardStore();
+  const { sidebarOpen, isMobile } = useDashboardStore();
   const [overview, setOverview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,7 +65,7 @@ export default function ConfigPage() {
   ];
 
   return (
-    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: sidebarW, transition: 'margin-left 0.3s' }}>
+    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-sm font-semibold text-zinc-100">Config</h2>
         <span className="text-[10px] text-zinc-600 bg-zinc-800 px-2 py-0.5 rounded-full">Read-only</span>

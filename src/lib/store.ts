@@ -10,6 +10,10 @@ interface DashboardState {
   setConnectionStatus: (s: 'online' | 'offline' | 'checking') => void;
   lastSync: string | null;
   setLastSync: (s: string) => void;
+  isMobile: boolean;
+  setIsMobile: (m: boolean) => void;
+  mobileMenuOpen: boolean;
+  setMobileMenuOpen: (o: boolean) => void;
 }
 
 export const useDashboardStore = create<DashboardState>((set) => ({
@@ -21,4 +25,8 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   setConnectionStatus: (s) => set({ connectionStatus: s }),
   lastSync: null,
   setLastSync: (s) => set({ lastSync: s }),
+  isMobile: false,
+  setIsMobile: (m) => set({ isMobile: m }),
+  mobileMenuOpen: false,
+  setMobileMenuOpen: (o) => set({ mobileMenuOpen: o }),
 }));

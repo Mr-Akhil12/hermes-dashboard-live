@@ -18,7 +18,7 @@ interface CronJob {
 }
 
 export default function SchedulePage() {
-  const { sidebarOpen } = useDashboardStore();
+  const { sidebarOpen, isMobile } = useDashboardStore();
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -133,7 +133,7 @@ export default function SchedulePage() {
   const sidebarW = sidebarOpen ? '14rem' : '4rem';
 
   return (
-    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: sidebarW, transition: 'margin-left 0.3s' }}>
+    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-semibold text-zinc-100">{monthName}</h2>

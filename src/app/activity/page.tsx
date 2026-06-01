@@ -15,7 +15,7 @@ interface LogEntry {
 }
 
 export default function ActivityPage() {
-  const { sidebarOpen } = useDashboardStore();
+  const { sidebarOpen, isMobile } = useDashboardStore();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [connected, setConnected] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -62,7 +62,7 @@ export default function ActivityPage() {
   const sidebarW = sidebarOpen ? '14rem' : '4rem';
 
   return (
-    <div className={`flex flex-col h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: sidebarW, transition: 'margin-left 0.3s' }}>
+    <div className={`flex flex-col h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
       {/* Toolbar */}
       <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid #1e1e2a' }}>
         <div className="flex items-center gap-3">

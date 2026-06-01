@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "name": "hermes-dashboard",
+  "name": "hermes-dashboard-live",
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "authentication": {
+    "type": "none"
+  }
 }
