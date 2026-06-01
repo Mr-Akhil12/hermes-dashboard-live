@@ -39,10 +39,11 @@ app.use(express.json());
 // ─── Auth middleware ───
 function auth(req, res, next) {
   const header = req.headers['x-dashboard-secret'];
-  if (header !== SHARED_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  const query = req.query?.secret;
+  if (header === SHARED_SECRET || query === SHARED_SECRET) {
+    return next();
   }
-  next();
+  return res.status(401).json({ error: 'Unauthorized' });
 }
 
 // ─── Helper: read cron jobs from disk ───

@@ -4,10 +4,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDashboardStore } from '@/lib/store';
 import { fetchOverview, fetchCronJobs, fetchHealth } from '@/lib/api';
-import { theme, getStatusColor } from '@/lib/colors';
+import { theme } from '@/lib/colors';
 import KpiCard from '@/components/KpiCard';
 import CalendarHeatmap from '@/components/CalendarHeatmap';
-import { Clock, CheckCircle2, AlertTriangle, XCircle, Cpu, ArrowUpRight } from 'lucide-react';
+import { Clock, CheckCircle2, AlertTriangle, Cpu, ArrowUpRight } from 'lucide-react';
 
 interface OverviewData {
   jobs: { total: number; active: number; paused: number; errors: number };
@@ -18,7 +18,7 @@ interface OverviewData {
 }
 
 export default function OverviewPage() {
-  const { sidebarOpen, setConnectionStatus, setLastSync } = useDashboardStore();
+  const { setConnectionStatus, setLastSync } = useDashboardStore();
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [recentRuns, setRecentRuns] = useState<Array<{ jobName: string; runTime: string; content: string }>>([]);
   const [allRuns, setAllRuns] = useState<Array<{ runTime: string }>>([]);
@@ -48,13 +48,18 @@ export default function OverviewPage() {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // refresh every 30s
+    const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [loadData]);
 
+  const mainStyle: React.CSSProperties = {
+    marginLeft: 'var(--sidebar-w, 14rem)',
+    transition: 'margin-left 0.3s',
+  };
+
   if (loading) {
     return (
-      <div className={`flex items-center justify-center h-full ${theme.text}`} style={{ marginLeft: sidebarOpen ? '14rem' : '4rem' }}>
+      <div className={`flex items-center justify-center h-full ${theme.text}`} style={mainStyle}>
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm text-zinc-500">Connecting to control plane...</p>
@@ -64,52 +69,21 @@ export default function OverviewPage() {
   }
 
   return (
-    <div
-      className={`p-5 space-y-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`}
-      style={{ marginLeft: sidebarOpen ? '14rem' : '4rem', transition: 'margin-left 0.3s' }}
-    >
-      {/* Error banner */}
+    <div className={`p-5 space-y-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={mainStyle}>
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
           Control plane offline — {error}. Showing cached data.
         </div>
       )}
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard
-          title="Active Jobs"
-          value={overview?.jobs.active ?? '—'}
-          subtitle={`${overview?.jobs.total ?? 0} total`}
-          icon={Clock}
-          accent="text-emerald-400"
-        />
-        <KpiCard
-          title="Runs Today"
-          value={overview?.runs.today ?? '—'}
-          subtitle={`${overview?.runs.total ?? 0} all time`}
-          icon={CheckCircle2}
-          accent="text-sky-400"
-        />
-        <KpiCard
-          title="Errors"
-          value={overview?.jobs.errors ?? '—'}
-          subtitle={overview?.jobs.paused ? `${overview.jobs.paused} paused` : 'All healthy'}
-          icon={overview?.jobs.errors ? AlertTriangle : CheckCircle2}
-          accent={overview?.jobs.errors ? 'text-red-400' : 'text-emerald-400'}
-        />
-        <KpiCard
-          title="Model"
-          value={overview?.model?.split('/').pop() ?? '—'}
-          subtitle={overview?.provider ?? ''}
-          icon={Cpu}
-          accent="text-orange-400"
-        />
+        <KpiCard title="Active Jobs" value={overview?.jobs.active ?? '—'} subtitle={`${overview?.jobs.total ?? 0} total`} icon={Clock} accent="text-emerald-400" />
+        <KpiCard title="Runs Today" value={overview?.runs.today ?? '—'} subtitle={`${overview?.runs.total ?? 0} all time`} icon={CheckCircle2} accent="text-sky-400" />
+        <KpiCard title="Errors" value={overview?.jobs.errors ?? '—'} subtitle={overview?.jobs.paused ? `${overview.jobs.paused} paused` : 'All healthy'} icon={overview?.jobs.errors ? AlertTriangle : CheckCircle2} accent={overview?.jobs.errors ? 'text-red-400' : 'text-emerald-400'} />
+        <KpiCard title="Model" value={overview?.model?.split('/').pop() ?? '—'} subtitle={overview?.provider ?? ''} icon={Cpu} accent="text-orange-400" />
       </div>
 
-      {/* Middle row: heatmap + live feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Calendar Heatmap */}
         <div className={`lg:col-span-2 ${theme.bgCard} rounded-xl p-4`} style={{ border: '1px solid #1e1e2a' }}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xs uppercase tracking-wider text-zinc-500 font-medium">90-Day Activity</h3>
@@ -125,7 +99,6 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Live Activity Feed */}
         <div className={`${theme.bgCard} rounded-xl p-4`} style={{ border: '1px solid #1e1e2a' }}>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs uppercase tracking-wider text-zinc-500 font-medium">Recent Activity</h3>
@@ -143,7 +116,7 @@ export default function OverviewPage() {
                     <ArrowUpRight className="w-3 h-3 text-zinc-600 mt-0.5 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs text-zinc-300 truncate">{run.jobName}</p>
-                      <p className="text-[10px] text-zinc-600">{timeStr} · {run.content?.slice(0, 60) || '—'}</p>
+                      <p className="text-[10px] text-zinc-600">{timeStr} · {(run.content || '—').slice(0, 60)}</p>
                     </div>
                   </div>
                 );
@@ -153,7 +126,6 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* Bottom: Model + Provider info */}
       <div className={`${theme.bgCard} rounded-xl p-4`} style={{ border: '1px solid #1e1e2a' }}>
         <h3 className="text-xs uppercase tracking-wider text-zinc-500 font-medium mb-3">System</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
