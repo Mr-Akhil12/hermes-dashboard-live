@@ -17,7 +17,7 @@ interface CostData {
 }
 
 export default function CostsPage() {
-  const { sidebarOpen, isMobile } = useDashboardStore();
+  useDashboardStore(); // keep store subscription
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState<{
     jobs: { total: number; active: number; paused: number; errors: number };
@@ -39,7 +39,6 @@ export default function CostsPage() {
     useEffect(() => { loadData(); // eslint-disable-next-line react-hooks/set-state-in-effect
 }, [loadData]);
 
-  const sidebarW = sidebarOpen ? '14rem' : '4rem';
 
   // Placeholder cost data — real data comes from OpenRouter API + local tracking
   const providers = [
@@ -49,7 +48,7 @@ export default function CostsPage() {
   ];
 
   return (
-    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
+    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: 'var(--sidebar-w, 4rem)', transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-orange-400" />

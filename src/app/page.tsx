@@ -19,7 +19,7 @@ interface OverviewData {
 }
 
 export default function OverviewPage() {
-  const { setConnectionStatus, setLastSync, sidebarOpen, isMobile, connectionStatus } = useDashboardStore();
+  const { setConnectionStatus, setLastSync, sidebarOpen, connectionStatus } = useDashboardStore();
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [recentRuns, setRecentRuns] = useState<Array<{ jobName: string; runTime: string; content: string }>>([]);
   const [allRuns, setAllRuns] = useState<Array<{ runTime: string }>>([]);
@@ -52,7 +52,7 @@ export default function OverviewPage() {
   }, [loadData]);
 
   // responsive margin
-  const marginLeft = isMobile ? 0 : (sidebarOpen ? '14rem' : '4rem');
+  const marginLeft = 'var(--sidebar-w, 4rem)';
 
   if (loading) {
     return (

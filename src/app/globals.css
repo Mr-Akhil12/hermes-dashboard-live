@@ -7,6 +7,13 @@
   --text: #fafafa;
   --muted: #a1a1aa;
   --accent: #f97316;
+  --sidebar-w: 4rem;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --sidebar-w: 0px;
+  }
 }
 
 * {

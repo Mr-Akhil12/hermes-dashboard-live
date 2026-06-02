@@ -27,11 +27,10 @@ const SETUP_SUGGESTIONS = [
 ];
 
 export default function AgentsPage() {
-  const { sidebarOpen, isMobile } = useDashboardStore();
-  const sidebarW = sidebarOpen ? '14rem' : '4rem';
+  useDashboardStore(); // keep store subscription
 
   return (
-    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: isMobile ? 0 : (sidebarW), transition: 'margin-left 0.3s' }}>
+    <div className={`p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: 'var(--sidebar-w, 4rem)', transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-sm font-semibold text-zinc-100">Agents</h2>
         <span className="text-xs text-zinc-600">{AGENTS.length} active</span>
