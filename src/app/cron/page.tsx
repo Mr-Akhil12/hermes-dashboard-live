@@ -2,27 +2,16 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
+import { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import { useDashboardStore } from '@/lib/store';
 import { fetchCronJobs, pauseCron, resumeCron, deleteCron } from '@/lib/api';
 import { theme, getStatusColor } from '@/lib/colors';
-import { Pause, Play, Trash2, X, AlertTriangle, LayoutGrid, List } from 'lucide-react';
 import type { Node, Edge } from 'reactflow';
 import { MarkerType } from 'reactflow';
+import { Pause, Play, Trash2, X, AlertTriangle, LayoutGrid, List } from 'lucide-react';
 
-// Dynamic import — React Flow uses browser APIs that break SSR
-const ReactFlowPanel = dynamic(() => import('@/components/ReactFlowPanel'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full flex items-center justify-center bg-[#0a0a0f]">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-xs text-zinc-500">Loading flow...</p>
-      </div>
-    </div>
-  ),
-});
+// Lazy load React Flow — MUST be dynamic to avoid SSR issues
+const ReactFlowPanel = lazy(() => import('@/components/ReactFlowPanel'));
 
 interface CronJob {
   id: string;
