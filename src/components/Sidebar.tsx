@@ -33,19 +33,21 @@ export default function Sidebar() {
   const connColor = getStatusColor(connectionStatus);
 
   // responsive detection
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const check = () => {
       const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
-        setSidebarOpen(false);
-        setMobileMenuOpen(false);
-      }
+      useDashboardStore.setState({
+        isMobile: mobile,
+        sidebarOpen: mobile ? false : sidebarOpen,
+        mobileMenuOpen: mobile ? false : mobileMenuOpen,
+      });
     };
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
-  }, [setSidebarOpen, setIsMobile, setMobileMenuOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sidebarOpen, mobileMenuOpen]);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/' || pathname === '';

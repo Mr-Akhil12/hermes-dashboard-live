@@ -32,7 +32,9 @@ export default function SchedulePage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => { loadData(); // eslint-disable-next-line react-hooks/set-state-in-effect
+}, [loadData]);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();

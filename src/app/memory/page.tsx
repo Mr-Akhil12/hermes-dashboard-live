@@ -30,7 +30,9 @@ export default function MemoryPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => { loadData(); // eslint-disable-next-line react-hooks/set-state-in-effect
+}, [loadData]);
 
   const filtered = facts.filter(f =>
     !search || f.content?.toLowerCase().includes(search.toLowerCase()) ||

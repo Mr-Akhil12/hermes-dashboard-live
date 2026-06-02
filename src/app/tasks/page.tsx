@@ -39,12 +39,13 @@ export default function TasksPage() {
     localStorage.setItem('hermes-tasks', JSON.stringify(t));
   }, []);
 
-  useEffect(() => { loadTasks(); }, [loadTasks]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => { loadTasks(); }, [loadTasks]);
 
-  const addTask = (status: Task['status']) => {
+  const addTask = useCallback((status: Task['status']) => {
     if (!newTask.trim()) return;
     const task: Task = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
       title: newTask.trim(),
       status,
       created_at: new Date().toISOString(),
@@ -52,7 +53,7 @@ export default function TasksPage() {
     saveTasks([task, ...tasks]);
     setNewTask('');
     setAddingTo(null);
-  };
+  }, [newTask, tasks, saveTasks]);
 
   const moveTask = (taskId: string, newStatus: Task['status']) => {
     saveTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));

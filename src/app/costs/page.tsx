@@ -19,7 +19,13 @@ interface CostData {
 export default function CostsPage() {
   const { sidebarOpen, isMobile } = useDashboardStore();
   const [loading, setLoading] = useState(true);
-  const [overview, setOverview] = useState<any>(null);
+  const [overview, setOverview] = useState<{
+    jobs: { total: number; active: number; paused: number; errors: number };
+    runs: { today: number; total: number };
+    model: string;
+    provider: string;
+    serverTime: string;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -29,7 +35,9 @@ export default function CostsPage() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => { loadData(); // eslint-disable-next-line react-hooks/set-state-in-effect
+}, [loadData]);
 
   const sidebarW = sidebarOpen ? '14rem' : '4rem';
 

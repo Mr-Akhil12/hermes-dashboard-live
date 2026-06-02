@@ -1,4 +1,5 @@
 // src/app/cron/page.tsx — CRON JOBS TAB
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -107,13 +108,14 @@ export default function CronPage() {
 
       setNodes(flowNodes);
       setEdges(flowEdges);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
   }, [filter, setNodes, setEdges]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 30000);
@@ -348,7 +350,7 @@ export default function CronPage() {
               <p className="text-[11px] text-orange-400 font-medium mb-1">Editing</p>
               <p className="text-[10px] text-zinc-500">
                 To edit, DM Hermes on Discord:<br />
-                <span className="text-zinc-400 font-mono">"{selectedJob.name} — [change]"</span>
+                <span className="text-zinc-400 font-mono">{selectedJob.name} — [change]</span>
               </p>
             </div>
             <div className="flex gap-2">

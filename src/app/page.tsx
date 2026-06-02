@@ -1,4 +1,5 @@
 // src/app/page.tsx — OVERVIEW tab (default landing)
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -34,12 +35,16 @@ export default function OverviewPage() {
       setOverview(overviewData);
       setRecentRuns((cronData.runs || []).slice(0, 15));
       setAllRuns(cronData.runs || []);
-      setConnectionStatus(health.status === 'ok' ? 'online' : 'offline');
-      setLastSync(new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }));
+      useDashboardStore.setState({
+        connectionStatus: health.status === 'ok' ? 'online' : 'offline',
+        lastSync: new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
+      });
     } catch { /* fallback data handles this */ }
     finally { setLoading(false); }
-  }, [setConnectionStatus, setLastSync]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 30000);

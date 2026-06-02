@@ -13,7 +13,13 @@ function headers() {
 
 // ─── Fallback / mock data when control plane is offline ───
 
-const FALLBACK_OVERVIEW = {
+const FALLBACK_OVERVIEW: {
+  jobs: { total: number; active: number; paused: number; errors: number };
+  runs: { today: number; total: number };
+  model: string;
+  provider: string;
+  serverTime: string;
+} = {
   jobs: { total: 18, active: 16, paused: 1, errors: 1 },
   runs: { today: 273, total: 871 },
   model: 'ollama-cloud/minimax-m3',
@@ -21,29 +27,47 @@ const FALLBACK_OVERVIEW = {
   serverTime: new Date().toISOString(),
 };
 
-const FALLBACK_CRON_JOBS = {
+interface FallbackCronJob {
+  id: string;
+  name: string;
+  schedule_display: string;
+  state: string;
+  enabled: boolean;
+  last_status: string;
+  last_run_at: string;
+  next_run_at: string;
+  deliver: string;
+  no_agent: boolean;
+  script: string;
+}
+
+const FALLBACK_CRON_JOBS: { jobs: FallbackCronJob[]; runs: Array<{ jobId: string; jobName: string; runTime: string; content: string; fileName: string; size: number }> } = {
   jobs: [
     { id: '1', name: 'OpenRouter Usage Check', schedule_display: '0 * * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 3600000).toISOString(), next_run_at: new Date(Date.now() + 3600000).toISOString(), deliver: '#openrouter-usage', no_agent: true, script: 'openrouter_usage_check.sh' },
-    { id: '2', name: 'Brain Synthesis', schedule_display: '0 8 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 72000000).toISOString(), next_run_at: new Date(Date.now() + 12000000).toISOString(), deliver: '#second-brain' },
-    { id: '3', name: 'Self-Improvement Engine', schedule_display: '0 4 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 108000000).toISOString(), deliver: 'local', no_agent: true },
-    { id: '4', name: 'Dashboard Sync', schedule_display: '*/5 * * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 300000).toISOString(), deliver: 'github' },
-    { id: '5', name: 'Vault Healer', schedule_display: '0 2 * * 0', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 259200000).toISOString(), deliver: 'local' },
-    { id: '6', name: 'Blog Content Pipeline', schedule_display: '0 6 * * 1', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 432000000).toISOString(), deliver: '#content-pipeline' },
-    { id: '7', name: 'Wix Form Idle Check', schedule_display: '*/30 * * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 1800000).toISOString(), deliver: '#wix-notifications' },
-    { id: '8', name: 'Daily AI News Report', schedule_display: '0 8 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 72000000).toISOString(), deliver: '#ai-news' },
-    { id: '9', name: 'AgenticBiz Content Sync', schedule_display: '0 10 * * 1-5', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 144000000).toISOString(), deliver: '#agentic-biz' },
-    { id: '10', name: 'Database Cleanup', schedule_display: '0 0 1 * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 2592000000).toISOString(), deliver: 'local' },
-    { id: '11', name: 'Hush PWA Monitor', schedule_display: '0 9 * * *', state: 'paused', enabled: false, last_status: 'ok', last_run_at: new Date(Date.now() - 86400000).toISOString(), deliver: '#hush-alerts' },
-    { id: '12', name: 'Model Health Check', schedule_display: '0 */6 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 21600000).toISOString(), deliver: 'local' },
+    { id: '2', name: 'Brain Synthesis', schedule_display: '0 8 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 72000000).toISOString(), next_run_at: new Date(Date.now() + 12000000).toISOString(), deliver: '#second-brain', no_agent: false, script: '' },
+    { id: '3', name: 'Self-Improvement Engine', schedule_display: '0 4 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 108000000).toISOString(), next_run_at: new Date(Date.now() + 86400000).toISOString(), deliver: 'local', no_agent: true, script: 'self_improve.sh' },
+    { id: '4', name: 'Dashboard Sync', schedule_display: '*/5 * * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 300000).toISOString(), next_run_at: new Date(Date.now() + 300000).toISOString(), deliver: 'github', no_agent: true, script: 'sync_dashboard.sh' },
+    { id: '5', name: 'Vault Healer', schedule_display: '0 2 * * 0', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 259200000).toISOString(), next_run_at: new Date(Date.now() + 432000000).toISOString(), deliver: 'local', no_agent: true, script: 'vault_healer.sh' },
+    { id: '6', name: 'Blog Content Pipeline', schedule_display: '0 6 * * 1', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 432000000).toISOString(), next_run_at: new Date(Date.now() + 172800000).toISOString(), deliver: '#content-pipeline', no_agent: false, script: '' },
+    { id: '7', name: 'Wix Form Idle Check', schedule_display: '*/30 * * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 1800000).toISOString(), next_run_at: new Date(Date.now() + 1800000).toISOString(), deliver: '#wix-notifications', no_agent: false, script: '' },
+    { id: '8', name: 'Daily AI News Report', schedule_display: '0 8 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 72000000).toISOString(), next_run_at: new Date(Date.now() + 12000000).toISOString(), deliver: '#ai-news', no_agent: false, script: '' },
+    { id: '9', name: 'AgenticBiz Content Sync', schedule_display: '0 10 * * 1-5', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 144000000).toISOString(), next_run_at: new Date(Date.now() + 172800000).toISOString(), deliver: '#agentic-biz', no_agent: false, script: '' },
+    { id: '10', name: 'Database Cleanup', schedule_display: '0 0 1 * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 2592000000).toISOString(), next_run_at: new Date(Date.now() + 2592000000).toISOString(), deliver: 'local', no_agent: true, script: 'db_cleanup.sh' },
+    { id: '11', name: 'Hush PWA Monitor', schedule_display: '0 9 * * *', state: 'paused', enabled: false, last_status: 'ok', last_run_at: new Date(Date.now() - 86400000).toISOString(), next_run_at: '', deliver: '#hush-alerts', no_agent: false, script: '' },
+    { id: '12', name: 'Model Health Check', schedule_display: '0 */6 * * *', state: 'scheduled', enabled: true, last_status: 'ok', last_run_at: new Date(Date.now() - 21600000).toISOString(), next_run_at: new Date(Date.now() + 21600000).toISOString(), deliver: 'local', no_agent: false, script: '' },
   ],
-  runs: Array.from({ length: 20 }, (_, i) => ({
-    jobId: String((i % 12) + 1),
-    jobName: ['OpenRouter Usage Check', 'Brain Synthesis', 'Self-Improvement', 'Dashboard Sync', 'Vault Healer', 'Blog Content', 'Wix Form Check', 'AI News', 'AgenticBiz Sync', 'DB Cleanup', 'Hush Monitor', 'Model Health'][i % 12],
-    runTime: new Date(Date.now() - i * 1800000).toISOString(),
-    content: `Completed successfully. Processed ${Math.floor(Math.random() * 50)} items.`,
-    fileName: `run-${i}.log`,
-    size: Math.floor(Math.random() * 5000),
-  })),
+  runs: [
+    { jobId: '1', jobName: 'OpenRouter Usage Check', runTime: new Date(Date.now() - 1800000).toISOString(), content: 'Usage: $0.00 today. 47 requests. All within free tier.', fileName: 'run-0.log', size: 2400 },
+    { jobId: '4', jobName: 'Dashboard Sync', runTime: new Date(Date.now() - 300000).toISOString(), content: 'Synced 871 runs, 273 today. Push successful.', fileName: 'run-1.log', size: 1800 },
+    { jobId: '2', jobName: 'Brain Synthesis', runTime: new Date(Date.now() - 72000000).toISOString(), content: 'Synthesized 12 new connections. Updated 3 vault files.', fileName: 'run-2.log', size: 3200 },
+    { jobId: '7', jobName: 'Wix Form Idle Check', runTime: new Date(Date.now() - 1800000).toISOString(), content: 'No idle forms found. All 4 active.', fileName: 'run-3.log', size: 900 },
+    { jobId: '3', jobName: 'Self-Improvement Engine', runTime: new Date(Date.now() - 108000000).toISOString(), content: 'Analyzed 23 sessions. Saved 5 new skills. Updated memory.', fileName: 'run-4.log', size: 4100 },
+    { jobId: '12', jobName: 'Model Health Check', runTime: new Date(Date.now() - 21600000).toISOString(), content: 'All models healthy. Latency: 142ms avg.', fileName: 'run-5.log', size: 1200 },
+    { jobId: '8', jobName: 'Daily AI News Report', runTime: new Date(Date.now() - 72000000).toISOString(), content: 'Compiled 8 news items. Delivered to #ai-news.', fileName: 'run-6.log', size: 2800 },
+    { jobId: '5', jobName: 'Vault Healer', runTime: new Date(Date.now() - 259200000).toISOString(), content: 'Healed 2 broken links. Backed up vault. All clean.', fileName: 'run-7.log', size: 1500 },
+    { jobId: '9', jobName: 'AgenticBiz Content Sync', runTime: new Date(Date.now() - 144000000).toISOString(), content: 'Synced 3 blog posts. Updated sitemap.', fileName: 'run-8.log', size: 2100 },
+    { jobId: '6', jobName: 'Blog Content Pipeline', runTime: new Date(Date.now() - 432000000).toISOString(), content: 'Generated 2 drafts. Scheduled for review.', fileName: 'run-9.log', size: 3600 },
+  ],
 };
 
 function getFallbackOverview() {
@@ -53,7 +77,7 @@ function getFallbackOverview() {
 function getFallbackCronJobs() {
   return {
     ...FALLBACK_CRON_JOBS,
-    runs: FALLBACK_CRON_JOBS.runs.map(r => ({ ...r, runTime: new Date(Date.now() - Math.random() * 86400000).toISOString() })),
+    runs: FALLBACK_CRON_JOBS.runs.map(r => ({ ...r, runTime: new Date(Date.now() - r.size * 1000).toISOString() })),
   };
 }
 

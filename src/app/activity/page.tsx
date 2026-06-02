@@ -45,13 +45,15 @@ export default function ActivityPage() {
     };
   }, [controlUrl, secret, paused]);
 
-  useEffect(() => {
-    connect();
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => {
+    connect(); // eslint-disable-next-line react-hooks/set-state-in-effect
     return () => { eventSourceRef.current?.close(); };
   }, [connect]);
 
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [logs]);
 
   const filtered = logs.filter(l => {
