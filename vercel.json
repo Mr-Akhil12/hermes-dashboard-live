@@ -4,8 +4,5 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "authentication": {
-    "type": "none"
-  }
+  "installCommand": "npm install"
 }
