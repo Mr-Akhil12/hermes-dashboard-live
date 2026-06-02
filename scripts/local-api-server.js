@@ -307,12 +307,12 @@ app.get('/api/vault/:vault', auth, (req, res) => {
   res.json({ vault: req.params.vault, files });
 });
 
-app.get('/api/vault/:vault/file/*', auth, (req, res) => {
+app.get('/api/vault/:vault/file/*path', auth, (req, res) => {
   const vault = req.params.vault === 'second-brain' ? VAULT_BRAIN : VAULT_HERMES;
-  const filePath = path.join(vault, req.params[0]);
+  const filePath = path.join(vault, req.params.path);
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
   const content = fs.readFileSync(filePath, 'utf-8');
-  res.json({ path: req.params[0], content, size: content.length, modified: fs.statSync(filePath).mtime.toISOString() });
+  res.json({ path: req.params.path, content, size: content.length, modified: fs.statSync(filePath).mtime.toISOString() });
 });
 
 app.get('/api/vault/:vault/search', auth, (req, res) => {
