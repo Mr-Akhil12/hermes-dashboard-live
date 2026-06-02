@@ -3,10 +3,10 @@
 
 import { useDashboardStore } from '@/lib/store';
 import { getStatusColor, theme } from '@/lib/colors';
-import { Wifi, WifiOff, Menu } from 'lucide-react';
+import { Wifi, WifiOff } from 'lucide-react';
 
 export default function TopBar() {
-  const { connectionStatus, lastSync, sidebarOpen, setMobileMenuOpen } = useDashboardStore();
+  const { connectionStatus, lastSync, sidebarOpen, mobileMenuOpen, setMobileMenuOpen } = useDashboardStore();
   const connColor = getStatusColor(connectionStatus);
 
   const now = new Date();
@@ -23,13 +23,6 @@ export default function TopBar() {
       }}
     >
       <div className="flex items-center gap-2 md:gap-3 min-w-0">
-        {/* Mobile hamburger — visible only on small screens via CSS */}
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 flex-shrink-0 md:hidden"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
         <div className="min-w-0">
           <h1 className="text-sm font-semibold text-zinc-100 truncate">Hermes OS</h1>
           {lastSync && (
@@ -39,15 +32,12 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-        {/* Time — hide date on small screens */}
         <div className="text-right hidden sm:block">
           <p className="text-xs font-medium text-zinc-300">{timeStr}</p>
           <p className="text-[10px] text-zinc-600">{dateStr}</p>
         </div>
-        {/* Show time only on mobile */}
         <p className="text-xs font-medium text-zinc-300 sm:hidden">{timeStr}</p>
 
-        {/* Connection */}
         <div className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-medium ${connColor.bg} ${connColor.text}`}>
           {connectionStatus === 'online' ? (
             <Wifi className="w-3 h-3" />

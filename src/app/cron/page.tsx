@@ -135,7 +135,7 @@ export default function CronPage() {
   }
 
   return (
-    <div className={`flex h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: 'var(--sidebar-w, 4rem)', transition: 'margin-left 0.3s' }}>
+    <div className={`flex h-[calc(100vh-3.5rem)] pt-24 md:pt-14 ${theme.bg}`} style={{ marginLeft: 'var(--sidebar-w, 4rem)', transition: 'margin-left 0.3s' }}>
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <div className="flex items-center justify-between px-3 md:px-5 py-3 flex-shrink-0" style={{ borderBottom: '1px solid #1e1e2a' }}>
           <div className="flex items-center gap-1.5 md:gap-2 overflow-x-auto min-w-0">

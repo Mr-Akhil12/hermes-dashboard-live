@@ -60,7 +60,7 @@ export default function MemoryPage() {
   }
 
   return (
-    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] pt-24 md:pt-14 pt-24 md:pt-14 ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-orange-400" />

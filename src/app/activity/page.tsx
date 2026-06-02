@@ -73,7 +73,7 @@ export default function ActivityPage() {
   // Session detail view
   if (selectedSession) {
     return (
-      <div className={`flex h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+      <div className={`flex h-[calc(100vh-3.5rem)] pt-24 md:pt-14 ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid #1e1e2a' }}>
             <button onClick={() => setSelectedSession(null)} className="text-xs text-orange-400 hover:text-orange-300 mb-2 flex items-center gap-1">
@@ -108,7 +108,7 @@ export default function ActivityPage() {
   const displayMessages = searchResults?.messages || [];
 
   return (
-    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] pt-24 md:pt-14 pt-24 md:pt-14 ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
       {/* Search + filters */}
       <div className="flex items-center gap-2 mb-4">
         <div className="flex-1 relative">

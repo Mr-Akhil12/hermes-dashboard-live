@@ -68,7 +68,7 @@ export default function TasksPage() {
   }
 
   return (
-    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] pt-24 md:pt-14 pt-24 md:pt-14 ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-sm font-semibold text-zinc-100">Tasks</h2>
         <p className="text-xs text-zinc-600">{tasks.length} total · {tasks.filter(t => t.status === 'done').length} done</p>
