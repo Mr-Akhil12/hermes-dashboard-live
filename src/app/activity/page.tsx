@@ -1,140 +1,193 @@
-// src/app/activity/page.tsx — LIVE ACTIVITY TAB (SSE stream)
+// src/app/activity/page.tsx — LIVE ACTIVITY TAB (Real Session Data)
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useDashboardStore } from '@/lib/store';
-import { theme, getStatusColor } from '@/lib/colors';
-import { Activity, Pause, Play, Filter } from 'lucide-react';
+import { fetchSessions, fetchSession, searchSessions, fetchHealth } from '@/lib/api';
+import { theme } from '@/lib/colors';
+import { Search, MessageSquare, Clock, Cpu, ChevronRight, Wifi, WifiOff } from 'lucide-react';
 
-interface LogEntry {
-  type: string;
-  jobName?: string;
-  runTime?: string;
-  content?: string;
-  time?: string;
+interface Session {
+  id: string;
+  source: string;
+  model: string;
+  messageCount: number;
+  title: string;
+  startedAt: number;
+  inputTokens: number;
+  outputTokens: number;
 }
 
 export default function ActivityPage() {
-  useDashboardStore(); // keep store subscription
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [connected, setConnected] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'run' | 'error' | 'heartbeat'>('all');
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const logsEndRef = useRef<HTMLDivElement>(null);
+  const { sidebarOpen, setConnectionStatus, setLastSync } = useDashboardStore();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{ sessions: Session[]; messages: any[] } | null>(null);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [sourceFilter, setSourceFilter] = useState('');
 
-  const controlUrl = process.env.NEXT_PUBLIC_CONTROL_URL || '';
-  const secret = process.env.NEXT_PUBLIC_DASHBOARD_SECRET || '';
+  const loadData = useCallback(async () => {
+    try {
+      const [data, health] = await Promise.all([
+        fetchSessions(30, sourceFilter),
+        fetchHealth(),
+      ]);
+      setSessions(data.sessions || []);
+      setConnectionStatus(health.status === 'ok' ? 'online' : 'offline');
+      setLastSync(new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }));
+    } catch {
+      setConnectionStatus('offline');
+    } finally {
+      setLoading(false);
+    }
+  }, [sourceFilter, setConnectionStatus, setLastSync]);
 
-  const connect = useCallback(() => {
-    if (eventSourceRef.current) eventSourceRef.current.close();
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [loadData]);
 
-    // SSE doesn't support custom headers, so we use query param for auth
-    const url = `${controlUrl}/api/logs?secret=${encodeURIComponent(secret)}`;
-    const es = new EventSource(url);
-    eventSourceRef.current = es;
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) { setSearchResults(null); return; }
+    const results = await searchSessions(searchQuery);
+    setSearchResults(results);
+  };
 
-    es.onopen = () => setConnected(true);
-    es.onerror = () => { setConnected(false); es.close(); };
-    es.onmessage = (e) => {
-      if (paused) return;
-      try {
-        const data = JSON.parse(e.data);
-        setLogs(prev => [data, ...prev].slice(0, 200)); // keep last 200
-      } catch { /* skip */ }
-    };
-  }, [controlUrl, secret, paused]);
+  const handleSelectSession = async (session: Session) => {
+    const detail = await fetchSession(session.id);
+    setSelectedSession(detail);
+  };
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-    useEffect(() => {
-    connect(); // eslint-disable-next-line react-hooks/set-state-in-effect
-    return () => { eventSourceRef.current?.close(); };
-  }, [connect]);
+  const marginLeft = 'var(--sidebar-w, 4rem)';
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-    useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' }); // eslint-disable-next-line react-hooks/set-state-in-effect
-  }, [logs]);
+  if (loading) {
+    return (
+      <div className={`flex items-center justify-center h-full ${theme.text}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+        <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  const filtered = logs.filter(l => {
-    if (filter === 'all') return true;
-    return l.type === filter;
-  });
+  // Session detail view
+  if (selectedSession) {
+    return (
+      <div className={`flex h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="px-4 py-3 flex-shrink-0" style={{ borderBottom: '1px solid #1e1e2a' }}>
+            <button onClick={() => setSelectedSession(null)} className="text-xs text-orange-400 hover:text-orange-300 mb-2 flex items-center gap-1">
+              ← Back to sessions
+            </button>
+            <h2 className="text-sm font-semibold text-zinc-100">{selectedSession.session.title || 'Untitled Session'}</h2>
+            <div className="flex items-center gap-3 mt-1 text-[10px] text-zinc-500">
+              <span className="flex items-center gap-1"><Cpu className="w-3 h-3" />{selectedSession.session.model}</span>
+              <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" />{selectedSession.session.messageCount} msgs</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(selectedSession.session.startedAt * 1000).toLocaleString('en-ZA')}</span>
+              <span>{selectedSession.session.source}</span>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {selectedSession.messages.map((msg: any, i: number) => (
+              <div key={i} className={`${msg.role === 'user' ? 'bg-[#111118]' : msg.role === 'assistant' ? 'bg-[#0d0d14]' : 'bg-[#16161f]'} rounded-xl p-3`}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className={`text-[10px] font-semibold uppercase ${msg.role === 'user' ? 'text-orange-400' : msg.role === 'assistant' ? 'text-emerald-400' : 'text-zinc-500'}`}>{msg.role}</span>
+                  {msg.toolCallId && <span className="text-[9px] text-zinc-600 bg-zinc-800 px-1.5 py-0.5 rounded">tool</span>}
+                </div>
+                <p className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // Session list view
+  const displaySessions = searchResults?.sessions || sessions;
+  const displayMessages = searchResults?.messages || [];
 
   return (
-    <div className={`flex flex-col h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft: 'var(--sidebar-w, 4rem)', transition: 'margin-left 0.3s' }}>
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-5 py-3" style={{ borderBottom: '1px solid #1e1e2a' }}>
-        <div className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-          <span className="text-xs text-zinc-400">{connected ? 'Live' : 'Disconnected'}</span>
-          <span className="text-[10px] text-zinc-600">{logs.length} events</span>
+    <div className={`p-3 md:p-5 overflow-y-auto h-[calc(100vh-3.5rem)] ${theme.bg}`} style={{ marginLeft, transition: 'margin-left 0.3s' }}>
+      {/* Search + filters */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-600" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="Search sessions and messages..."
+            className={`w-full ${theme.bgCard} border rounded-lg pl-9 pr-3 py-2 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-orange-500/50`}
+            style={{ borderColor: '#1e1e2a' }}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {(['all', 'run', 'error'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                  filter === f ? 'bg-zinc-800 text-zinc-200' : 'text-zinc-600 hover:text-zinc-400'
-                }`}
-              >
-                {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+        <button onClick={handleSearch} className="px-3 py-2 rounded-lg text-xs font-medium bg-orange-500/10 text-orange-400 hover:bg-orange-500/20">Search</button>
+      </div>
+
+      {/* Source filter */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto">
+        {['', 'discord', 'cron', 'web'].map(s => (
+          <button key={s} onClick={() => { setSourceFilter(s); setSearchResults(null); }} className={`px-2.5 py-1 rounded-full text-[10px] font-medium flex-shrink-0 ${sourceFilter === s ? 'bg-orange-500/10 text-orange-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            {s || 'All'}
+          </button>
+        ))}
+        <span className="text-[10px] text-zinc-600 ml-2">{sessions.length} sessions</span>
+      </div>
+
+      {/* Search results notice */}
+      {searchResults && (
+        <div className="bg-orange-500/5 border border-orange-500/10 rounded-lg px-3 py-2 mb-3 text-xs text-orange-400">
+          Showing results for "{searchQuery}" — {searchResults.sessions.length} sessions, {searchResults.messages.length} messages
+          <button onClick={() => { setSearchResults(null); setSearchQuery(''); }} className="ml-2 text-zinc-500 hover:text-zinc-300">Clear</button>
+        </div>
+      )}
+
+      {/* Search message results */}
+      {displayMessages.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">Message Results</h3>
+          <div className="space-y-2">
+            {displayMessages.map((msg, i) => (
+              <button key={i} onClick={() => handleSelectSession(msg as any)} className={`w-full text-left ${theme.bgCard} rounded-xl p-3 hover:bg-zinc-800/50 transition-colors`} style={{ border: '1px solid #1e1e2a' }}>
+                <p className="text-xs text-zinc-300 line-clamp-2">{msg.content}</p>
+                <p className="text-[9px] text-zinc-600 mt-1">{msg.sessionTitle} · {msg.role} · {msg.startedAt ? new Date(msg.startedAt * 1000).toLocaleDateString('en-ZA') : ''}</p>
               </button>
             ))}
           </div>
-          <button
-            onClick={() => setPaused(!paused)}
-            className={`p-1.5 rounded-lg ${paused ? 'bg-amber-500/10 text-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}
-          >
-            {paused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
-          </button>
-          <button
-            onClick={() => { setLogs([]); }}
-            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 text-[10px]"
-          >
-            Clear
-          </button>
         </div>
-      </div>
+      )}
 
-      {/* Log stream */}
-      <div className="flex-1 overflow-y-auto px-5 py-3 space-y-1 font-mono">
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-zinc-600">
-            <Activity className="w-8 h-8 mb-2 opacity-30" />
-            <p className="text-xs">Waiting for events...</p>
-          </div>
-        ) : (
-          filtered.map((log, i) => (
-            <div
-              key={i}
-              className={`flex items-start gap-3 py-1.5 px-2 rounded hover:bg-zinc-800/30 ${
-                log.type === 'error' ? 'bg-red-500/5' : ''
-              }`}
-              style={{ borderBottom: '1px solid #0d0d14' }}
-            >
-              <span className="text-[10px] text-zinc-700 flex-shrink-0 w-16">
-                {log.runTime ? new Date(log.runTime).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) :
-                 log.time ? new Date(log.time).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
-              </span>
-              <span className={`text-[10px] flex-shrink-0 w-12 uppercase font-medium ${
-                log.type === 'error' ? 'text-red-400' :
-                log.type === 'run' ? 'text-emerald-400' :
-                log.type === 'heartbeat' ? 'text-zinc-700' : 'text-zinc-500'
-              }`}>
-                {log.type}
-              </span>
-              <span className="text-[11px] text-zinc-300 flex-1 truncate">
-                {log.jobName && <span className="text-zinc-400">{log.jobName}: </span>}
-                {log.content || log.time || '—'}
-              </span>
+      {/* Session list */}
+      <div className="space-y-2">
+        {displaySessions.map(session => (
+          <button
+            key={session.id}
+            onClick={() => handleSelectSession(session)}
+            className={`w-full text-left ${theme.bgCard} rounded-xl p-3 hover:bg-zinc-800/50 transition-colors`}
+            style={{ border: '1px solid #1e1e2a' }}
+          >
+            <div className="flex items-start justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-zinc-200 font-medium truncate">{session.title || session.id.slice(0, 20)}</p>
+                <div className="flex items-center gap-2 mt-1 text-[9px] text-zinc-500">
+                  <span className={`px-1.5 py-0.5 rounded ${session.source === 'cron' ? 'bg-amber-500/10 text-amber-400' : 'bg-sky-500/10 text-sky-400'}`}>{session.source}</span>
+                  <span className="flex items-center gap-0.5"><MessageSquare className="w-2.5 h-2.5" />{session.messageCount}</span>
+                  <span>{session.model.split('/').pop()}</span>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0 ml-2">
+                <p className="text-[9px] text-zinc-500">{new Date(session.startedAt * 1000).toLocaleDateString('en-ZA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                {(session.inputTokens + session.outputTokens) > 0 && (
+                  <p className="text-[9px] text-zinc-600 mt-0.5">{(session.inputTokens + session.outputTokens).toLocaleString()} tokens</p>
+                )}
+              </div>
             </div>
-          ))
+          </button>
+        ))}
+        {displaySessions.length === 0 && (
+          <p className="text-xs text-zinc-600 text-center py-8">{searchResults ? 'No results found' : 'No sessions yet'}</p>
         )}
-        <div ref={logsEndRef} />
       </div>
     </div>
   );
