@@ -152,14 +152,23 @@ export default function CronPage() {
 
           {view === 'graph' ? (
             <div className="h-full">
-              <ReactFlowPanel
-                nodes={flowNodes}
-                edges={flowEdges}
-                onNodeClick={(_, node) => {
-                  const job = jobs.find(j => j.id === node.id);
-                  if (job) setSelectedJob(job);
-                }}
-              />
+              <Suspense fallback={
+                <div className="h-full flex items-center justify-center bg-[#0a0a0f]">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-xs text-zinc-500">Loading flow...</p>
+                  </div>
+                </div>
+              }>
+                <ReactFlowPanel
+                  nodes={flowNodes}
+                  edges={flowEdges}
+                  onNodeClick={(_, node) => {
+                    const job = jobs.find(j => j.id === node.id);
+                    if (job) setSelectedJob(job);
+                  }}
+                />
+              </Suspense>
             </div>
           ) : (
             <div className="p-3 md:p-5">
